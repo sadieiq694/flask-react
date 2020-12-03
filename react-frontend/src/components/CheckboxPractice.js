@@ -38,7 +38,7 @@ class CheckboxPractice extends React.Component {
     render() {
         var nodes = this.props.nodeData;
         var edges = this.props.linksData;
-        console.log("Edge example:", edges[0])
+        //console.log("Edge example:", edges[0])
         var top_resources = ["pod", "node", "container"]
         var serv_resources = ["deployment", "pod", "service"]
         //console.log("One node:", nodes[1])
@@ -54,7 +54,7 @@ class CheckboxPractice extends React.Component {
         var filtered_edges = edges.filter( item => {
             return (verts.includes(item['source']) && verts.includes(item['target']))
         })
-        console.log("filtered nodes", filtered_nodes, "filtered edges", filtered_edges )
+        //console.log("filtered nodes", filtered_nodes, "filtered edges", filtered_edges )
         var listItems = filtered_nodes.map((node) => <li>{node.name}</li>);
 
       //console.log(this.state.options)

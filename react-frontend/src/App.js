@@ -14,13 +14,11 @@ import Example from './components/rechart-components/ReChartLine.js'
 
 function App() {
   var data = window.graphData
-  //console.log("CONSOLE LOG APP: ", data)
   var newData = data.replace(/&#34;/g, '"')
-  //console.log("CONSOLE LOG APP: ", newData, typeof(newData))
   data = JSON.parse(newData);
 
-  var nodes = data.graph.nodes
-  var edges = data.graph.edges; 
+  var nodes = data.nodes
+  var edges = data.edges; 
 
   /*
   var cpu = data.cpu;
@@ -32,21 +30,6 @@ function App() {
   var latency = data.latency;
   var memory = data.memory; 
   var ops = data.ops;*/
-
-  var cpu = require('./smallData/cpu_small.json')
-  var ops = require('./smallData/ops_small.json')
-  var latency = require('./smallData/latency_small.json')
-  var events = require('./smallData/events_small.json')
-  var error = require('./smallData/err_small.json')
-  var memory = require('./smallData/memory_small.json')
-  // these are all lists of objects
-
-  const barData = [
-    [10, 30, 40, 20],
-    [10, 40, 30, 20, 50, 10],
-    [60, 30, 40, 20, 30]
-  ]
-
 
 
   return (
