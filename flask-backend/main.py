@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify
+from flask import jsonify, request
 import json
 
 import sys
@@ -63,17 +63,20 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 # app = flask.Flask(__name__)
 
-
-@app.route("/")
-def my_index():
-    # get graph data
+@app.route('/data/graph', methods=['GET'])
+def graph_data():
     graphData = graphCollection.find_one()
     if '_id' in graphData:
         print("removing id")
         del graphData['_id']
     parsedGraphData = parse_json(graphData)
+    return jsonify(parsedGraphData)
 
+@app.route('/data/metric', methods=['GET'])
+def metric_data():
     cpuData = get_dictionary_list(cpuCollection)
+    for c in cpuData:
+        c['cpu'] = float(c['cpu'])
     errData = get_dictionary_list(errCollection)
     eventData = get_dictionary_list(eventCollection)
     for e in eventData:
@@ -82,22 +85,23 @@ def my_index():
         #print(e['message'])
     latencyData = get_dictionary_list(latencyCollection)
     memoryData = get_dictionary_list(memoryCollection)
+    for m in memoryData:
+        m['memory'] = int(m['memory'])
     opsData = get_dictionary_list(opsCollection)
+    metric_data = {}
+    #all_data['graph'] = parsedGraphData
+    metric_data['cpu'] = cpuData
+    metric_data['error'] = errData
+    metric_data['event'] = eventData
+    metric_data['latency'] = latencyData
+    metric_data['memory'] = memoryData
+    metric_data['ops'] = opsData   
+    return jsonify(metric_data) 
 
-    all_data = {}
-    all_data['graph'] = parsedGraphData
-    all_data['cpu'] = cpuData
-    all_data['error'] = errData
-    all_data['event'] = eventData
-    all_data['latency'] = latencyData
-    all_data['memory'] = memoryData
-    all_data['ops'] = opsData
 
-    #newGraphData['nodes'] = parsedGraphData['nodes']
-    #newGraphData['edges'] = parsedGraphData['edges']
-    data_str = json.dumps(all_data)
-    print("Running with Mongo!!!")
-    return flask.render_template("index.html", graphData=data_str)
+@app.route("/")
+def my_index():
+    return flask.render_template("index.html")
 
 '''# background task to watch events
 def subscribe():

@@ -10,33 +10,15 @@ const unique = (value, index, self) => {
 	return self.indexOf(value) == index
 }
 
-var cpu = require('../../data/cpu.json')
-var ops = require('../../data/ops.json')
-var latency = require('../../data/latency.json')
-var error = require('../../data/err.json')
-var memory = require('../../data/memory.json')
+//var cpu = require('../../data/cpu.json')
+//var ops = require('../../data/ops.json')
+//var latency = require('../../data/latency.json')
+//var error = require('../../data/err.json')
+//var memory = require('../../data/memory.json')
 
-var mem_resources = memory.map(a => a.resource_id)
-var u_mem_resource = mem_resources.filter(unique)
-console.log(u_mem_resource)
 
-var mem_data_1  = memory.filter( item => {
-	return item["resource_id"] == "details-v1-6c9f8bcbcb-crqvr/details"
-  });
 
-for(var i in mem_data_1) {
-	mem_data_1[i].memory = parseInt(mem_data_1[i].memory)
-}
-
-var mem_data_2  = memory.filter( item => {
-	return item["resource_id"] == "productpage-v1-7df7cb7f86-5pdhd/productpage"
-  });
-
-for(var i in mem_data_2) {
-	mem_data_2[i].memory = parseInt(mem_data_2[i].memory)
-}
-
-console.log(mem_data_1);
+//console.log(mem_data_1);
 
 const data = [
 	{name: 'Page A', uv: 4000,  amt: 2400},
@@ -55,12 +37,47 @@ const data2 = [
 class Example extends PureComponent {
   static jsfiddleUrl = 'https://jsfiddle.net/alidingling/nskpgcrz/';
 
+  state = {
+    opsData: [],
+    memoryData: [],
+    eventData: [],
+    latencyData: [],
+    cpuData: [],
+    errorData: [],
+  };
+
+  async componentDidMount() {
+    const response = await fetch('/data/metric');
+    const data = await response.json(); 
+    this.setState({opsData: data.ops, memoryData: data.memory, eventData: data.event, errorData: data.error, latencyData: data.latency, cpuData: data.cpu });
+    console.log("graph data: ", this.state.opsData)
+  }
+
   render() {
+    var mem_resources = this.state.memoryData.map(a => a.resource_id)
+    var u_mem_resource = mem_resources.filter(unique)
+    console.log(u_mem_resource)
+
+    var mem_data_1  = this.state.memoryData.filter( item => {
+      return item["resource_id"] == "details-v1-6c9f8bcbcb-crqvr/details"
+      });
+
+    for(var i in mem_data_1) {
+      mem_data_1[i].memory = parseInt(mem_data_1[i].memory)
+    }
+
+    var mem_data_2  = this.state.memoryData.filter( item => {
+      return item["resource_id"] == "productpage-v1-7df7cb7f86-5pdhd/productpage"
+      });
+
+    for(var i in mem_data_2) {
+      mem_data_2[i].memory = parseInt(mem_data_2[i].memory)
+    }
     return (
       <div>
         <h4>Metric Plots</h4>
 		<SingleLineChart  
-			data={ops} 
+			data={this.state.opsData} 
 			width={500} 
 			height={200}
             syncID="anyID"
@@ -70,7 +87,7 @@ class Example extends PureComponent {
             yLabel="Ops/s"
             brush={true}/>
 		<SingleLineChart  
-			data={cpu} 
+			data={this.state.cpuData} 
 			width={500} 
 			height={200}
             syncID="anyID"
@@ -80,7 +97,7 @@ class Example extends PureComponent {
             yLabel="cpu"
             brush={false}/>
 		<SingleLineChart  
-			data={latency} 
+			data={this.state.latencyData} 
 			width={500} 
 			height={200}
             syncID="anyID"
@@ -90,7 +107,7 @@ class Example extends PureComponent {
             yLabel="latency"
             brush={false}/>
 		<SingleLineChart  
-			data={error} 
+			data={this.state.errorData} 
 			width={500} 
 			height={200}
             syncID="anyID"
