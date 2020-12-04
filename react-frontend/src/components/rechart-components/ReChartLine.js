@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Brush,
   AreaChart, Area, Label,
+  ScatterChart, Scatter, Cell
 } from 'recharts';
 import SingleLineChart from './SingleLineChart.js';
 

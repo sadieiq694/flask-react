@@ -1,24 +1,35 @@
-import React from 'react';
-import DisplayNodeNames from './components/DisplayNodeNames.js'
+import React, {useState, useEffect} from 'react';
 //import { ForceGraph } from "./components/ForceGraph.js";
 import CheckboxPractice from "./components/CheckboxPractice.js"
-import EventGraph from "./components/rechart-components/EventGraph.js"
-import CPUGraph from './components/rechart-components/CPUGraph.js';
-import LatencyGraph from './components/rechart-components/LatencyGraph.js'
-import ErrorGraph from './components/rechart-components/ErrorGraph.js'
-import MemGraph from './components/rechart-components/MemGraph.js'
-import OpsGraph from './components/rechart-components/OpsGraph.js'
-import D3Bar from './components/D3-components/D3Bar.js'
-import Example from './components/rechart-components/ReChartLine.js'
 
 
-function App() {
-  var data = window.graphData
-  var newData = data.replace(/&#34;/g, '"')
-  data = JSON.parse(newData);
 
-  var nodes = data.nodes
-  var edges = data.edges; 
+class App extends React.Component {
+  state = {
+    graphData: {"nodes":[], "edges":[]}
+  };
+
+  async componentDidMount() {
+    const response = await fetch('/data/graph');
+    const data = await response.json(); 
+    this.setState({graphData: data});
+    console.log("graph data: ", this.state.graphData)
+  }
+  
+  /*useEffect( () => {
+    fetch("/data/graph").then(response =>
+      response.json().then(data => {
+        console.log(data)
+        console.log("setting graph data!")
+        setGraphData(data)
+    }))
+  })*/
+
+
+  //var data = window.graphData
+  //var newData = data.replace(/&#34;/g, '"')
+  //data = JSON.parse(newData);
+
 
   /*
   var cpu = data.cpu;
@@ -31,18 +42,25 @@ function App() {
   var memory = data.memory; 
   var ops = data.ops;*/
 
+  render() {
+    console.log(this.state.graphData.nodes)
+    return (
+      <div className="App">
+        <header className="App-header">
+        <CheckboxPractice nodeData={this.state.graphData.nodes} linksData={this.state.graphData.edges}/>
+        </header>
+      </div>
+    );
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <DisplayNodeNames nodeData={nodes}/>
-        <CheckboxPractice nodeData={nodes} linksData={edges}/>
-      </header>
-    </div>
-  );
+  }
+  
 }
 
-//         <Example />
+//                 <CheckboxPractice nodeData={this.graphData.nodes} linksData={this.graphData.edges}/>
+// <CheckboxPractice nodeData={nodes} linksData={edges}/>
+
+// <Example />         <DisplayNodeNames nodeData={nodes}/>
+
 
 
 /*
