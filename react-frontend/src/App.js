@@ -9,6 +9,7 @@ class App extends React.Component {
     graphData: {"nodes":[], "edges":[]}
   };
 
+  // add button to re-update data from database
   async componentDidMount() {
     const response = await fetch('/data/graph');
     const data = await response.json(); 

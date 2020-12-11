@@ -10,16 +10,6 @@ const unique = (value, index, self) => {
 	return self.indexOf(value) == index
 }
 
-//var cpu = require('../../data/cpu.json')
-//var ops = require('../../data/ops.json')
-//var latency = require('../../data/latency.json')
-//var error = require('../../data/err.json')
-//var memory = require('../../data/memory.json')
-
-
-
-//console.log(mem_data_1);
-
 const data = [
 	{name: 'Page A', uv: 4000,  amt: 2400},
 	{name: 'Page B', uv: 3000, amt: 2210},

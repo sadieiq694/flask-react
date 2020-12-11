@@ -53,6 +53,9 @@ latencyCollection = db.latencyData
 memoryCollection = db.memoryData
 opsCollection = db.opsData
 
+db2 = mClient.clusterData
+eventColl = db2.clusterEventCollection
+
 # K8s API setup 
 # configure k8s client 
 #config.load_kube_config()
