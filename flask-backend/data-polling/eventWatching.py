@@ -28,7 +28,7 @@ db = mClient.clusterData
 #graphCollection = db.graphData
 eventCollection = db.clusterEventCollection
 fullEventCollection = db.clusterFullEventCollection
-fullEventCollection.drop()
+#fullEventCollection.drop()
 #eventCollection.drop()
 
 # assumes two events cant happen at the exact same time
@@ -39,6 +39,7 @@ config.load_kube_config()
 api = client.CoreV1Api()
 
 # this will run indefinitely I believe
+print("START!")
 count = 100
 w = watch.Watch()
 for w_event in w.stream(api.list_event_for_all_namespaces):

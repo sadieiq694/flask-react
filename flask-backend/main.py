@@ -45,10 +45,14 @@ def get_dictionary_list(coll):
 mClient = MongoClient()
 db = mClient.myNewDatabase
 
+db_e = mClient.clusterData
+#graphCollection = db.graphData
+eventCollection = db_e.clusterEventCollection
+
 graphCollection = db.graphData
 cpuCollection = db.cpuData
 errCollection = db.errData
-eventCollection = db.eventData
+#eventCollection = db.eventData
 latencyCollection = db.latencyData
 memoryCollection = db.memoryData
 opsCollection = db.opsData
