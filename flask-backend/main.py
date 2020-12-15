@@ -66,6 +66,7 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 # app = flask.Flask(__name__)
 
+
 @app.route('/data/graph', methods=['GET'])
 def graph_data():
     graphData = graphCollection.find_one()
@@ -77,6 +78,7 @@ def graph_data():
 
 @app.route('/data/metric', methods=['GET'])
 def metric_data():
+    print("Fetching from metric_data endpoint")
     cpuData = get_dictionary_list(cpuCollection)
     for c in cpuData:
         c['cpu'] = float(c['cpu'])

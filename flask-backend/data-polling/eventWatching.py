@@ -58,6 +58,7 @@ for w_event in w.stream(api.list_event_for_all_namespaces):
     event["time"] = item.event_time if item.event_time else item.last_timestamp if item.last_timestamp else item.first_timestamp
     event["time"] = datetime.timestamp(event["time"])
     event["time"] =  str(math.trunc( event["time"]*1000))
+    # only add event if not already in the db
     eventCollection.update_one(
             { 'time': event["time"]}, # filter
             { '$setOnInsert': event},
