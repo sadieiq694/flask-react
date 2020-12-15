@@ -4,7 +4,8 @@ import {
   AreaChart, Area, Label,
   ScatterChart, Scatter, Cell
 } from 'recharts';
-import SingleLineChart from './SingleLineChart.js';
+import SingleLineChart from './components/rechart-components/SingleLineChart.js';
+import EventChart from './components/rechart-components/EventChart.js';
 
 const unique = (value, index, self) => {
 	return self.indexOf(value) == index
@@ -24,7 +25,7 @@ const data2 = [
 	{name: 'Page D', pv: 3908, amt: 2000},
 ];
 
-class Example extends PureComponent {
+class MetricPlots extends PureComponent {
   static jsfiddleUrl = 'https://jsfiddle.net/alidingling/nskpgcrz/';
 
   state = {
@@ -36,11 +37,24 @@ class Example extends PureComponent {
     errorData: [],
   };
 
-  async componentDidMount() {
-    const response = await fetch('/data/metric');
-    const data = await response.json(); 
-    this.setState({opsData: data.ops, memoryData: data.memory, eventData: data.event, errorData: data.error, latencyData: data.latency, cpuData: data.cpu });
-    console.log("graph data: ", this.state.opsData)
+  //async 
+  componentDidMount() {
+    //const response = await fetch('/data/metric');
+    //const data = await response.json(); 
+    //this.setState({opsData: data.ops, memoryData: data.memory, eventData: data.event, errorData: data.error, latencyData: data.latency, cpuData: data.cpu });
+    //console.log("graph data: ", this.state.opsData)
+    this.fetchData();
+  }
+
+  fetchData = () => {
+    fetch('/data/metric').then((resp) => {
+      return resp.json()
+    }).then((data) => {
+      this.setState({opsData: data.ops, memoryData: data.memory, eventData: data.event, errorData: data.error, latencyData: data.latency, cpuData: data.cpu })
+      console.log("Number of events: ", this.state.eventData.length)
+    }).catch((error) => {
+      console.log(error, "FETCH FAILED!")
+    })
   }
 
   render() {
@@ -65,73 +79,83 @@ class Example extends PureComponent {
     }
     return (
       <div>
+        <button onClick={this.fetchData}>Refresh Metric Data</button> 
         <h4>Metric Plots</h4>
-		<SingleLineChart  
-			data={this.state.opsData} 
-			width={500} 
-			height={200}
-            syncID="anyID"
-            xDataKey="time"
-            yDataKey="ops"
-            xLabel="time"
-            yLabel="Ops/s"
-            brush={true}/>
-		<SingleLineChart  
-			data={this.state.cpuData} 
-			width={500} 
-			height={200}
-            syncID="anyID"
-            xDataKey="time"
-            yDataKey="cpu"
-            xLabel="time"
-            yLabel="cpu"
-            brush={false}/>
-		<SingleLineChart  
-			data={this.state.latencyData} 
-			width={500} 
-			height={200}
-            syncID="anyID"
-            xDataKey="time"
-            yDataKey="lat"
-            xLabel="time"
-            yLabel="latency"
-            brush={false}/>
-		<SingleLineChart  
-			data={this.state.errorData} 
-			width={500} 
-			height={200}
-            syncID="anyID"
-            xDataKey="time"
-            yDataKey="success"
-            xLabel="time"
-            yLabel="Success rate"
-            brush={false}/>
-		
-		<LineChart
-          width={600}
-          height={300}
-          //data={memory}
-          syncId="anyId"
-          margin={{
-            top: 10, right: 30, left: 20, bottom: 20,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time">
-			  <Label value="time" position="bottom"/>
-		  </XAxis>
-          <YAxis/>
-          <Tooltip />
-		  <Legend />
-		  <Line data={mem_data_1} type="monotone" dataKey="memory" stroke="#8884d8" activeDot={{r: 8}}/>
-      	  <Line data = {mem_data_2} type="monotone" dataKey="memory" stroke="#82ca9d" />
-        </LineChart>
+        <EventChart
+          data={this.state.eventData}
+          width={1000} 
+          height={200}
+          syncID="anyID"
+                xDataKey="time"
+                yDataKey="reason"
+                xLabel="time"
+                yLabel="Event Type"
+                brush={false} />
+        <SingleLineChart  
+          data={this.state.opsData} 
+          width={1000} 
+          height={200}
+                syncID="anyID"
+                xDataKey="time"
+                yDataKey="ops"
+                xLabel="time"
+                yLabel="Ops/s"
+                brush={true}/>
+        <SingleLineChart  
+          data={this.state.cpuData} 
+          width={1000} 
+          height={200}
+                syncID="anyID"
+                xDataKey="time"
+                yDataKey="cpu"
+                xLabel="time"
+                yLabel="cpu"
+                brush={false}/>
+        <SingleLineChart  
+          data={this.state.latencyData} 
+          width={1000} 
+          height={200}
+                syncID="anyID"
+                xDataKey="time"
+                yDataKey="lat"
+                xLabel="time"
+                yLabel="latency"
+                brush={false}/>
+        <SingleLineChart  
+          data={this.state.errorData} 
+          width={1000} 
+          height={200}
+                syncID="anyID"
+                xDataKey="time"
+                yDataKey="success"
+                xLabel="time"
+                yLabel="Success rate"
+                brush={false}/>
+        <LineChart
+              width={600}
+              height={300}
+              //data={memory}
+              syncId="anyId"
+              margin={{
+                top: 10, right: 30, left: 20, bottom: 20,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time">
+            <Label value="time" position="bottom"/>
+          </XAxis>
+              <YAxis/>
+              <Tooltip />
+          <Legend />
+          <Line data={mem_data_1} type="monotone" dataKey="memory" stroke="#8884d8" activeDot={{r: 8}}/>
+              <Line data = {mem_data_2} type="monotone" dataKey="memory" stroke="#82ca9d" />
+            </LineChart>
       </div>
     );
   }
 }
 
-export default Example
+export default MetricPlots
 
 /*
 <LineChart

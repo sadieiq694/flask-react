@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Example from './components/rechart-components/ReChartLine.js';
+import MetricPlots from './Metrics.js';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -13,7 +13,7 @@ ReactDOM.render(
 );
 
 ReactDOM.render(
-  <Example />, document.getElementById('rechart')
+  <MetricPlots />, document.getElementById('rechart')
 );
 
 // If you want to start measuring performance in your app, pass a function
