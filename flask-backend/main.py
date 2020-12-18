@@ -28,6 +28,8 @@ def get_dictionary_list(coll):
         parsed_elem = parse_json(elem)
         if '_id' in parsed_elem:
             del parsed_elem['_id']
+        if 'time' in parsed_elem:
+            parsed_elem['time'] = int(parsed_elem['time'])
         dict_list.append(parsed_elem)
     return dict_list
 

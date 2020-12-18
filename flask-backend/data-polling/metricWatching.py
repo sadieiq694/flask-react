@@ -12,6 +12,7 @@ from datetime import datetime,timedelta
 import time
 #import matplotlib.pyplot as plt
 import math
+import json
 
 import pymongo
 from pymongo import MongoClient
@@ -20,7 +21,7 @@ from pymongo import MongoClient
 # query every five  
 # call this function to get every five minutes, to mongoDB
 #base_url = "http://prometheus.169.48.174.6.nip.io/api/v1"
-base_url = "http://127.0.0.1:59286/api/v1"
+base_url = "http://127.0.0.1:49381/api/v1"
 quantile = 0.99
 start = 1594150127.950368
 end = 1594150147.950434
@@ -64,89 +65,8 @@ api = client.CoreV1Api()
 #    start_ts = request.args.get('start')
 #    end_ts = request.args.get('end')
 #else:
-end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
-start_ts = end_ts - 60
 
-url_now = "&start={0}&end={1}".format(start_ts,end_ts)
-print(url_cpu +url_now)
-
-print("MAKING REQUEST")
-r = requests.get(url = url_cpu +url_now) 
-
-print("REQUEST: ", r)
-
-# extracting data in json format 
-data = r.json()
-res_cpu = []
-cpu = {"resource_id": "minikube", "cpu": 323, "time": 1}
-
-for item in data["data"]['result']:
-    print(item)
-    cpu["resource_id"] = item["metric"]["pod"] + "/" +  (item["metric"]["container"] if "container" in item["metric"] else "")
-    for value in item["values"]:
-        cpu["cpu"] = value[1]
-        cpu["time"] = math.trunc(value[0]*1000)
-        res_cpu.append(copy(cpu))
-#return jsonify(res_cpu)
-
-'''
-# mem endpoint
-@app.route('/memory', methods=['GET'])
-def getMem():
-    if request.args.get('start') and request.args.get('end'):
-        start_ts = request.args.get('start')
-        end_ts = request.args.get('end')
-    else:
-        end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
-        start_ts = end_ts - 60
-    
-    url_now = "&start={0}&end={1}".format(start_ts,end_ts)
-    print(url_memory +url_now)
-    r = requests.get(url = url_memory +url_now) 
-  
-    # extracting data in json format 
-    data = r.json()
-    res_mem = []
-    mem = {"resource_id": "minikube", "memory": 323, "time": 1}
-
-    for item in data["data"]['result']:
-        # print(item)
-        mem["resource_id"] = item["metric"]["pod"] + "/" +  (item["metric"]["container"] if "container" in item["metric"] else "")
-        for value in item["values"]:
-            mem["memory"] = value[1]
-            mem["time"] = math.trunc(value[0]*1000)
-            res_mem.append(copy(mem))
-    return jsonify(res_mem)
-
-
-def get_metrics( url, quantile_arg = 0):
-    if quantile_arg != 0:
-        url_formatted = url.format(quantile_arg,service)
-    else:
-        url_formatted = url.format(service)
-    print(url_formatted)
-    res = []
-    r = requests.get(url = url_formatted) 
-  
-    # extracting data in json format 
-    data = r.json()
-#     print(data)
-    for item in data["data"]["result"]:
-        for item2 in item["values"]:
-#             print(item2)
-            item2[1] = float(item2[1])
-            res.append(item2)
-    return res
-
-# dummy endpoint
-@app.route('/', methods=['GET'])
-def home():
-    return "<h1>Tritium Rest API</h1><p>Trial</p>"
-
-
-# latency endpoint
-@app.route('/latency', methods=['GET'])
-def getLatency():
+def fetch_lat_data(start_ts, end_ts):
     if request.args.get('start') and request.args.get('end'):
         start_ts = request.args.get('start')
         end_ts = request.args.get('end')
@@ -183,7 +103,127 @@ def getLatency():
         res_lat.append(copy(latency))
 
     # print(res_lat)    
-    return jsonify(res_lat)
+    return res_lat
+
+def fetch_mem_data(url_now):
+    r = requests.get(url = url_memory +url_now) 
+  
+    # extracting data in json format 
+    mem_data = r.json()
+    mem_results = mem_data["data"]["result"]
+    
+    mem_formatted = []
+    mem = {}
+
+    for item in mem_results:
+        # print(item)
+        resource_id = item["metric"]["pod"] + "/" +  (item["metric"]["container"] if "container" in item["metric"] else "")
+        for value in item["values"]:
+            time = math.trunc(value[0]*1000)
+            print("Value: ", value)
+            idx = next((index for (index, d) in enumerate(mem_formatted) if d["time"] == time), None)
+            if idx is None: #not any(d.get('time') == time for d in cpu_formatted): # cpu['time'] in cpu_formatted:
+                # need to append a new guy!
+                mem["time"] = time
+                mem[resource_id] = float(value[1])
+                mem_formatted.append(copy(mem))
+            else:
+                # this time already exists in the dictionary, get index of the time,  
+                # to work with recharts, 
+                mem_formatted[idx][resource_id] = float(value[1])
+    return res_mem
+
+def fetch_cpu_data(url_now): 
+    r_cpu = requests.get(url = url_cpu + url_now) 
+
+    # extracting data in json format 
+    cpu_data = r_cpu.json()
+    cpu_results = cpu_data["data"]['result']
+
+    cpu_formatted = []
+    cpu = {}
+
+    for item in cpu_results: # one item per object I think...
+        resource_id =  item["metric"]["pod"] + "/" +  (item["metric"]["container"] if "container" in item["metric"] else "")
+        for value in item["values"]:
+            time = math.trunc(value[0]*1000)
+            idx = next((index for (index, d) in enumerate(cpu_formatted) if d["time"] == time), None)
+            if idx is None: #not any(d.get('time') == time for d in cpu_formatted): # cpu['time'] in cpu_formatted:
+                # need to append a new guy!
+                cpu["time"] = time
+                cpu[resource_id] = float(value[1])
+                cpu_formatted.append(copy(cpu))
+            else:
+                # this time already exists in the dictionary, get index of the time,  
+                # to work with recharts, 
+                cpu_formatted[idx][resource_id] = float(value[1])
+    with open("cpu_formatted.txt", "w") as f:
+        f.write(json.dumps(cpu_formatted))
+
+    # WRITE TO MONGODB
+    return cpu_formatted
+
+
+
+# we do this every minute? Have to do it for every metric type. 
+end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
+start_ts = end_ts - 60
+
+# get data between the start and end timestamps
+url_now = "&start={0}&end={1}".format(start_ts,end_ts)
+
+# Configurable time interval 
+# Kiali for service-service relationships 
+# end to end traces? 
+# Something like this?
+import time
+starttime = time.time()
+while True:
+    print "tick"
+    ### RUN EVERY FETCH FUNCTION
+    fetch_cpu_data(url_now)
+    fetch_mem_data(url_now)
+
+    time.sleep(60.0 - ((time.time() - starttime) % 60.0))
+    end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
+    start_ts = end_ts - 60
+
+print ("Start")
+
+fetch_cpu_data(url_now)
+
+
+#return jsonify(res_cpu)
+
+'''
+
+def get_metrics( url, quantile_arg = 0):
+    if quantile_arg != 0:
+        url_formatted = url.format(quantile_arg,service)
+    else:
+        url_formatted = url.format(service)
+    print(url_formatted)
+    res = []
+    r = requests.get(url = url_formatted) 
+  
+    # extracting data in json format 
+    data = r.json()
+#     print(data)
+    for item in data["data"]["result"]:
+        for item2 in item["values"]:
+#             print(item2)
+            item2[1] = float(item2[1])
+            res.append(item2)
+    return res
+
+# dummy endpoint
+@app.route('/', methods=['GET'])
+def home():
+    return "<h1>Tritium Rest API</h1><p>Trial</p>"
+
+
+# latency endpoint
+@app.route('/latency', methods=['GET'])
 
 
 

@@ -49,24 +49,27 @@ export default class Example extends PureComponent {
     */
   };
 
-  static jsfiddleUrl = 'https://jsfiddle.net/alidingling/9Lfxjjty/';
+  //static jsfiddleUrl = 'https://jsfiddle.net/alidingling/9Lfxjjty/';
 
   render() {
+    console.log("NUMBER OF EVENTS CHART SCRIPT: ", this.props.data)
     return (
       <ScatterChart
         width={this.props.width}
         height={this.props.height}
-        syncId={this.props.syncID}
         margin={{
           top: 20, right: 20, bottom: 20, left: 20,
         }}
       >
         <CartesianGrid />
-        <XAxis type="number" dataKey={this.props.xDataKey} name={this.props.xLabel} unit="s" domain={['dataMin', 'dataMax']} />
+        <XAxis type="number" dataKey={this.props.xDataKey} name={this.props.xLabel} unit="s" domain={[this.props.xMin, this.props.xMax]} />
         <YAxis type="category" dataKey={this.props.yDataKey} name={this.props.yLabel} />
         <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
-        <Scatter name="Events" data={this.props.data} fill="#8884d8"></Scatter>
+        <Scatter name="Events" data={this.props.data} fill={colors}></Scatter>
       </ScatterChart>
     );
   }
 }
+
+//         syncId={this.props.syncID}
+

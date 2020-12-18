@@ -57,9 +57,29 @@ class MetricPlots extends PureComponent {
     })
   }
 
+  /*getMinTime(data) {
+    if(data) {
+      return data.reduce((min, p) => p.time < min ? p.time : min, data[0].time);
+    }
+  }
+
+  getMaxTime(data) {
+    if(data) {
+      return data.reduce((max, p) => p.time > max ? p.time : max, data[0].time);
+    }
+  }*/
+
   render() {
     var mem_resources = this.state.memoryData.map(a => a.resource_id)
     var u_mem_resource = mem_resources.filter(unique)
+    var event_times = this.state.eventData.map(a => a.time)
+    var most_updated_data = this.state.eventData
+    console.log("Number of events: ", most_updated_data.length)
+
+    //console.log(event_times)
+    var min_event_time = Math.min.apply(null, event_times)
+    var max_event_time = Math.max.apply(null, event_times)
+    console.log(min_event_time, max_event_time)
     console.log(u_mem_resource)
 
     var mem_data_1  = this.state.memoryData.filter( item => {
@@ -81,13 +101,18 @@ class MetricPlots extends PureComponent {
       <div>
         <button onClick={this.fetchData}>Refresh Metric Data</button> 
         <h4>Metric Plots</h4>
+        <p>Number of events: {this.state.eventData.length}</p> 
+        <p>Min timestamp: {min_event_time}</p>
+        <p>Max timestamp: {max_event_time}</p>
         <EventChart
-          data={this.state.eventData}
+          data={most_updated_data}
           width={1000} 
-          height={200}
+          height={500}
           syncID="anyID"
                 xDataKey="time"
                 yDataKey="reason"
+                xMin={min_event_time}
+                xMax={max_event_time}
                 xLabel="time"
                 yLabel="Event Type"
                 brush={false} />
@@ -147,7 +172,7 @@ class MetricPlots extends PureComponent {
               <YAxis/>
               <Tooltip />
           <Legend />
-          <Line data={mem_data_1} type="monotone" dataKey="memory" stroke="#8884d8" activeDot={{r: 8}}/>
+              <Line data={mem_data_1} type="monotone" dataKey="memory" stroke="#8884d8" activeDot={{r: 8}}/>
               <Line data = {mem_data_2} type="monotone" dataKey="memory" stroke="#82ca9d" />
             </LineChart>
       </div>

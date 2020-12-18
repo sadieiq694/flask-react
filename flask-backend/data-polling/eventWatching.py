@@ -15,21 +15,17 @@ import time
 from datetime import datetime
 import math
 from datetime import datetime
-
-
 import pymongo
 from pymongo import MongoClient
 
-print("STARTING")
 
 # DB setup 
 mClient = MongoClient("mongodb://127.0.0.1:27017")
 db = mClient.clusterData
-#graphCollection = db.graphData
 eventCollection = db.clusterEventCollection
-fullEventCollection = db.clusterFullEventCollection
+#fullEventCollection = db.clusterFullEventCollection
 #fullEventCollection.drop()
-#eventCollection.drop()
+eventCollection.drop()
 
 # assumes two events cant happen at the exact same time
 
@@ -39,12 +35,10 @@ config.load_kube_config()
 api = client.CoreV1Api()
 
 # this will run indefinitely I believe
-print("START!")
-count = 100
+print("STARTING WATCH")
 w = watch.Watch()
 for w_event in w.stream(api.list_event_for_all_namespaces):
     event = {}
-    count -= 1
     # add the mongoDB
     item = w_event['object']
     #print(item)
@@ -59,15 +53,14 @@ for w_event in w.stream(api.list_event_for_all_namespaces):
     event["time"] = item.event_time if item.event_time else item.last_timestamp if item.last_timestamp else item.first_timestamp
     event["time"] = datetime.timestamp(event["time"])
     event["time"] =  str(math.trunc( event["time"]*1000))
-    # only add event if not already in the db
+    # only add event if not already in the db (should probably check every field is the same but meh)
     eventCollection.update_one(
-            { 'time': event["time"]}, # filter
+            { 'time': event["time"], 'message':event['message'], 'object': event['object']}, # filter
             { '$setOnInsert': event},
             upsert=True
         )
     #eventCollection.insert_one(event)
     print("Inserted ", event['message'])
-    if not count:
-        w.stop()
+
 
 print("Ended.")
