@@ -1,0 +1,349 @@
+{
+    "timestamp": 1613618342,
+    "duration": 600,
+    "graphType": "versionedApp",
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "fdb73cfd2c4ab063b55628171b90c1da",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "app": "details",
+            "isGroup": "app"
+          }
+        },
+        {
+          "data": {
+            "id": "a36f37791000071be31848d8cd3ff54e",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "app": "productpage",
+            "isGroup": "app"
+          }
+        },
+        {
+          "data": {
+            "id": "c84669252ea34659a1ef40ef9ca85dd2",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "app": "ratings",
+            "isGroup": "app"
+          }
+        },
+        {
+          "data": {
+            "id": "04fb79c83d05d1b1edc5b23afe97da24",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "app": "reviews",
+            "isGroup": "app"
+          }
+        },
+        {
+          "data": {
+            "id": "ba8192d2d36f8b2464eefddb161e9c96",
+            "parent": "fdb73cfd2c4ab063b55628171b90c1da",
+            "nodeType": "service",
+            "namespace": "tritium",
+            "app": "details",
+            "service": "details",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "details"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "ca6b9248a02374c3adfa0fc9bd0300c0",
+            "parent": "fdb73cfd2c4ab063b55628171b90c1da",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "details-v1",
+            "app": "details",
+            "version": "v1",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "details"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "03d266230729bf7c4944a00ece7bca87",
+            "parent": "a36f37791000071be31848d8cd3ff54e",
+            "nodeType": "service",
+            "namespace": "tritium",
+            "app": "productpage",
+            "service": "productpage",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "productpage"
+              }
+            ],
+            "hasVS": true
+          }
+        },
+        {
+          "data": {
+            "id": "b07b5b2bd39fe9a8fe39087a79c246be",
+            "parent": "a36f37791000071be31848d8cd3ff54e",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "productpage-v1",
+            "app": "productpage",
+            "version": "v1",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "productpage"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "cdd9686c6f6eed438bbe2cc1f77fb08c",
+            "parent": "c84669252ea34659a1ef40ef9ca85dd2",
+            "nodeType": "service",
+            "namespace": "tritium",
+            "app": "ratings",
+            "service": "ratings",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "ratings"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "a15162ce23702e78a1005e2e5f72d10c",
+            "parent": "c84669252ea34659a1ef40ef9ca85dd2",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "ratings-v1",
+            "app": "ratings",
+            "version": "v1",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "ratings"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "1c195a1d294a57cecbe91c043d20f656",
+            "parent": "04fb79c83d05d1b1edc5b23afe97da24",
+            "nodeType": "service",
+            "namespace": "tritium",
+            "app": "reviews",
+            "service": "reviews",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "reviews"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "81e77f381bc25cdddd6a7fd6ac2fb4c1",
+            "parent": "04fb79c83d05d1b1edc5b23afe97da24",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "reviews-v1",
+            "app": "reviews",
+            "version": "v1",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "reviews"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "e3f4dfaf3c7808161264ada4e484407d",
+            "parent": "04fb79c83d05d1b1edc5b23afe97da24",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "reviews-v2",
+            "app": "reviews",
+            "version": "v2",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "reviews"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "a7a84ec10111251864065478acac1e11",
+            "parent": "04fb79c83d05d1b1edc5b23afe97da24",
+            "nodeType": "app",
+            "namespace": "tritium",
+            "workload": "reviews-v3",
+            "app": "reviews",
+            "version": "v3",
+            "destServices": [
+              {
+                "namespace": "tritium",
+                "name": "reviews"
+              }
+            ]
+          }
+        },
+        {
+          "data": {
+            "id": "d7c639544a7810a8d021b64538e4e435",
+            "nodeType": "service",
+            "namespace": "unknown",
+            "service": "PassthroughCluster",
+            "destServices": [
+              {
+                "namespace": "unknown",
+                "name": "PassthroughCluster"
+              }
+            ],
+            "isInaccessible": true
+          }
+        }
+      ],
+      "edges": [
+        {
+          "data": {
+            "id": "d8f4894cdd3ce1047194dcaed169db91",
+            "source": "03d266230729bf7c4944a00ece7bca87",
+            "target": "b07b5b2bd39fe9a8fe39087a79c246be",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "50203e1d51e9d44cff75951935c4065b",
+            "source": "1c195a1d294a57cecbe91c043d20f656",
+            "target": "81e77f381bc25cdddd6a7fd6ac2fb4c1",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "158b6fe03b96aec252906282b4dc8270",
+            "source": "1c195a1d294a57cecbe91c043d20f656",
+            "target": "a7a84ec10111251864065478acac1e11",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "463c297740b5139753fedce0412c1853",
+            "source": "1c195a1d294a57cecbe91c043d20f656",
+            "target": "e3f4dfaf3c7808161264ada4e484407d",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "f933c5485c041e40a4a164ff15f98725",
+            "source": "a15162ce23702e78a1005e2e5f72d10c",
+            "target": "03d266230729bf7c4944a00ece7bca87",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "d64c3922ba82d13150a25d1744e14614",
+            "source": "a7a84ec10111251864065478acac1e11",
+            "target": "cdd9686c6f6eed438bbe2cc1f77fb08c",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "8a98dae85b677cce9d8201593d8ff6eb",
+            "source": "b07b5b2bd39fe9a8fe39087a79c246be",
+            "target": "1c195a1d294a57cecbe91c043d20f656",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "09c1d7a2a451925d0ed71f901a0b0d08",
+            "source": "b07b5b2bd39fe9a8fe39087a79c246be",
+            "target": "ba8192d2d36f8b2464eefddb161e9c96",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "e30d007d48e90b882c10a5729515b542",
+            "source": "b07b5b2bd39fe9a8fe39087a79c246be",
+            "target": "d7c639544a7810a8d021b64538e4e435",
+            "traffic": {
+              "protocol": "tcp"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "8656ab931c1ff2a2b4203736857d3fc8",
+            "source": "ba8192d2d36f8b2464eefddb161e9c96",
+            "target": "ca6b9248a02374c3adfa0fc9bd0300c0",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "395253311f0ce54cb0311bff2e7ee8d4",
+            "source": "cdd9686c6f6eed438bbe2cc1f77fb08c",
+            "target": "a15162ce23702e78a1005e2e5f72d10c",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "e1d84fa1a30cb4a1226d336f064fa090",
+            "source": "e3f4dfaf3c7808161264ada4e484407d",
+            "target": "cdd9686c6f6eed438bbe2cc1f77fb08c",
+            "traffic": {
+              "protocol": "http"
+            }
+          }
+        }
+      ]
+    }
+  }

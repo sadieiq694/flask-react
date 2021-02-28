@@ -2,7 +2,6 @@ import React from 'react'
 //import { ForceGraph } from "./ForceGraph.js";
 import ForceGraphClass from "./ForceGraphClass.js"
 
-
 class CheckboxPractice extends React.Component {
     constructor(props) {
       super(props);
@@ -11,7 +10,7 @@ class CheckboxPractice extends React.Component {
       };
       
       this.onChange = this.onChange.bind(this)
-  
+      //this.onSliderChange = this.onSliderChange.bind(this)
       //this.handleInputChange = this.handleInputChange.bind(this);
     };
 
@@ -90,3 +89,6 @@ class CheckboxPractice extends React.Component {
 
 
 export default CheckboxPractice
+
+
+

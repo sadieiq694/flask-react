@@ -100,7 +100,7 @@ class MetricPlots extends PureComponent {
     return (
       <div>
         <button onClick={this.fetchData}>Refresh Metric Data</button> 
-        <h4>Metric Plots</h4>
+        <h4>Metric Plots!</h4>
         <p>Number of events: {this.state.eventData.length}</p> 
         <p>Min timestamp: {min_event_time}</p>
         <p>Max timestamp: {max_event_time}</p>
