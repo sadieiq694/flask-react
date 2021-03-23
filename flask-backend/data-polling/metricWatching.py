@@ -14,37 +14,34 @@ import time
 import math
 import json
 import os
+import numpy as np 
 
 import pymongo
 from pymongo import MongoClient
 import pickle
+from copy import copy
 
 # turn into function
 # query every five  
 # call this function to get every five minutes, to mongoDB
 # base_url = "http://prometheus.169.48.174.6.nip.io/api/v1"
 # base_url = "http://127.0.0.1:49381/api/v1"
-base_url = "http://prometheus.169.48.174.6.nip.io/api/v1"
+base_url = "http://prometheus.169.48.174.6.nip.io/api/v1/"
 quantile = 0.99
-start = 1594150127.950368
-end = 1594150147.950434
 service = ".*default.svc.cluster.local"
 
-cpu_url = 'http://prometheus.169.48.174.6.nip.io/api/v1/query_range?query=container_cpu_usage_seconds_total&namespace=tritium&start=1614133653.088&end=1614137253.088&step=14&_=1614134310139'
+cpu_url = base_url + '/query_range?query=container_cpu_usage_seconds_total&namespace=tritium&start=1614133653.088&end=1614137253.088&step=14'
 
 ######################
 ### METRICS QUERY ####
 # latency for service: (histogram_quantile({0}, sum(irate(istio_request_duration_milliseconds_bucket{reporter="source",destination_service=~"productpage.default.svc.cluster.local"}[1m])) by (le)) / 1000) 
 url = base_url + "/query_range?query=(histogram_quantile({0}%2C%20sum(irate(istio_request_duration_milliseconds_bucket%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{1}%22%7D%5B1m%5D))%20by%20(le))%20%2F%201000)%20&step=5"
 
-# latency for each services: rate(istio_request_duration_milliseconds_sum{reporter="destination"}[1m])/rate(istio_request_duration_milliseconds_count{reporter="destination"}[1m])
+# latency for each service: rate(istio_request_duration_milliseconds_sum{reporter="destination"}[1m])/rate(istio_request_duration_milliseconds_count{reporter="destination"}[1m])
 url_latency = base_url + "/query_range?query=rate(istio_request_duration_milliseconds_sum{reporter=%22destination%22}[1m])/rate(istio_request_duration_milliseconds_count{reporter=%22destination%22}[1m])&step=5"
 
+# VOLUME round(sum(irate(istio_requests_total{reporter="destination"}[1m])), 0.001)
 
-#round(sum(irate(istio_requests_total{namespace="tritium"}[5m])))
-# global request volume  round(sum(irate(istio_requests_total{reporter="destination"}[1m])), 0.001)
-# productpage volume:    round(sum(irate(istio_requests_total{reporter="source",destination_service=~"productpage.default.svc.cluster.local"}[5m])), 0.001)
-url_volume = base_url + "/query_range?query=round(sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{0}%22%7D%5B5m%5D))%2C%200.001)&step=5"
 
 # numerator:     sum(irate(istio_requests_total{reporter="source", destination_service=~"productpage.default.svc.cluster.local",response_code!~"5.*", source_workload=~"istio-ingressgateway", source_workload_namespace=~"istio-system"}[5m])) by (source_workload, source_workload_namespace)
 # denominator:   sum(irate(istio_requests_total{reporter="source", destination_service=~"productpage.default.svc.cluster.local", source_workload=~"istio-ingressgateway", source_workload_namespace=~"istio-system"}[5m])) by (source_workload, source_workload_namespace)
@@ -65,63 +62,43 @@ config.load_kube_config()
 api = client.CoreV1Api()
 
 
-def get_metrics( url, quantile_arg = 0):
+def get_metrics( url_formatted, quantile_arg = 0):
     if quantile_arg != 0:
-        url_formatted = url.format(quantile_arg,service)
-    else:
-        url_formatted = url.format(service)
-    print(url_formatted)
+        url_formatted = url_formatted.format(quantile_arg)
+    #else:
+    #    url_formatted = url.format(service)
+    #print(url_formatted)
+    #input("Continue...")
     res = []
     r = requests.get(url = url_formatted) 
   
     # extracting data in json format 
     data = r.json()
-#     print(data)
     for item in data["data"]["result"]:
+        cur_result = {}
+        cur_result["metadata"] = item["metric"]
+        cur_result["values"] = []
         for item2 in item["values"]:
-#             print(item2)
+#           print(item2)
             item2[1] = float(item2[1])
-            res.append(item2)
+            cur_result["values"].append([item2[0], item2[1]* 1000 if (not(math.isnan(item2[1]))) else 0])
+        res.append(copy(cur_result))
     return res
 
-def fetch_lat_data(start_ts, end_ts):
-    if request.args.get('start') and request.args.get('end'):
-        start_ts = request.args.get('start')
-        end_ts = request.args.get('end')
-    else:
-        end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
-        start_ts = end_ts - 60
+def fetch_lat_data(url):
+    #latency = {"resource_id":service,"lat":0,"quantile":0,"time":0}
+    #res_lat_50 = []
+    #res_lat_90 = [] 
+    #res_lat_99 = [] 
+      
+    res_lat_50 = get_metrics(url, 0.50)
+    res_lat_90 = get_metrics(url, 0.90)
+    res_lat_99 = get_metrics(url, 0.99)
+    reg = get_metrics(url)
 
-    latency = {"resource_id":service,"lat":0,"quantile":0,"time":0}
-    res_lat = []
-    
-    url_now = "&start={0}&end={1}".format(start_ts,end_ts)
-  
-    res_50 = get_metrics(url+url_now, 0.50)
-    res_90 = get_metrics(url+url_now, 0.90)
-    res_99 = get_metrics(url+url_now, 0.99)
-    print("m")
-
-    for item in res_50:
-        latency["time"] = math.trunc(item[0]*1000)
-        latency["lat"] = item[1]* 1000 if (not(math.isnan(item[1])))  else 0
-        latency["quantile"] = 50
-        res_lat.append(copy(latency))
-        
-    for item in res_90:
-        latency["time"] =  math.trunc(item[0]*1000)
-        latency["lat"] = item[1]* 1000 if (not(math.isnan(item[1]))) else 0
-        latency["quantile"] = 90
-        res_lat.append(copy(latency))
-        
-    for item in res_99:
-        latency["time"] =  math.trunc(item[0]*1000)
-        latency["lat"] = item[1]* 1000 if (not(math.isnan(item[1])))  else 0
-        latency["quantile"] = 99
-        res_lat.append(copy(latency))
-
-    # print(res_lat)    
-    return res_lat
+    # print(res_lat)   
+    all_lat = {"50th": res_lat_50, "90th": res_lat_90, "99th": res_lat_99, "reg":reg} 
+    return all_lat
 
 def fetch_mem_data(url_now):
     r = requests.get(url = url_now) 
@@ -183,37 +160,56 @@ def fetch_cpu_data(url_now):
     # WRITE TO MONGODB
     return cpu_formatted
 
+def fetch_volume_data(url_now): 
+    volume_array = [] 
+    r_volume = requests.get(url = url_now) 
+
+    volume_data = r_volume.json()
+    volume_results = volume_data['data']['result'][0]
+
+    for val in volume_results['values']:
+        volume_array.append([val[0], float(val[1])])
+
+    return volume_array
+
 
 # Configurable time interval 
 # Kiali for service-service relationships 
 # end to end traces? 
 # Something like this?
 import time
+#very_start = time.time()
 print("START")
 
-if os.path.exists("data.p"):
+'''if os.path.exists("data.p"):
     with open('data.p', 'rb') as f:
         all_data = pickle.load(f)
-else:
-    all_data = {"cpu_data":[], "memory_data":[], "latency_data": [], "ops_data":[], "error_data":[], "volume_data":[]}
+else:'''
+all_data = {"cpu_data":[], "memory_data":[], "latency_data": [], "ops_data":[], "error_data":[], "volume_data":[]}
 
 starttime = time.time()
 end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
 start_ts = end_ts - 60
+very_first_start = copy(start_ts)
 
-while True:
+while end_ts - very_first_start < 1200: # 15 minutes
+    print(end_ts - very_first_start)
     print("tick")
 
     url_now = "&start={0}&end={1}".format(start_ts,end_ts)
 
-    cpu_url_namespaced = "http://prometheus.169.48.174.6.nip.io/api/v1/query_range?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10" #_=1614134310140"
-    memory_url_namespaced = "http://prometheus.169.48.174.6.nip.io/api/v1/query_range?query=container_memory_working_set_bytes%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10"
-    #latency_url_namespace = http://prometheus.169.48.174.6.nip.io/api/v1/query_range?query=container_memory_working_set_bytes%7Bnamespace%3D%22tritium%22%7D&start=1614199898.235&end=1614203498.235&step=10
-    #ops_url_namespaced = 
+    #url_latency = ""
+    cpu_url_namespaced = base_url + "query_range?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10" #_=1614134310140"
+    memory_url_namespaced = base_url + "query_range?query=container_memory_working_set_bytes%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10"
+    #latency_url = base_url + "query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20destination_service%3D~%22productpage.*%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20destination_service%3D~%22productpage.*%22%7D%5B1m%5D)&step=15" 
+    latency_url = base_url + "query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20namespace%3D%22tritium%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20namespace%3D%22tritium%22%7D%5B1m%5D)&step=15"
     #error_url_namespaced = 
-    #volume_url_namespaced = 
+    # error_url = base_url + "query_range?query=sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{0}%22%2Cresponse_code!~%225.*%22%7D%5B5m%5D))%20%2F%20sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{0}%22%7D%5B5m%5D))&step=5"
+    volume_productpage = base_url + "query_range?query=round(sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22productpage.tritium.svc.cluster.local%22%7D%5B5m%5D))%2C%200.001)&step=15"
 
     ### RUN EVERY FETCH FUNCTION
+
+    ### LATENCY ### # NOT TESTED!
 
     ### CPU ###
     cpu_new_data = fetch_cpu_data(cpu_url_namespaced + url_now)
@@ -221,23 +217,37 @@ while True:
     #print(times)
     all_data['cpu_data'].extend(cpu_new_data[1:])
     
-    #fetch_mem_data(url_now)
+    ### MEMORY ###
     mem_new_data = fetch_mem_data(memory_url_namespaced + url_now)
-    times = [i['time'] for i in mem_new_data]
-    print(times)
-    print(mem_new_data[0].keys())
     all_data['memory_data'].extend(mem_new_data[1:])
 
-    print(len(all_data['cpu_data']))
-    if len(all_data['cpu_data'])%20 == 0: # every few minutes...
-        print("SAVING TO PICKLE FILE")
-        # save data to file
-        with open("data.p", "wb") as f:
-            pickle.dump(all_data, f)
+    ### VOLUME ### 
+    volume_new_data = fetch_volume_data(volume_productpage + url_now)
+    all_data['volume_data'].extend(volume_new_data)
 
     time.sleep(60.0 - ((time.time() - starttime) % 60.0))
     end_ts = datetime.timestamp(datetime.now().replace(microsecond=0))
     start_ts = end_ts - 60
+
+print("EXITED LOOP")
+
+url_all = "&start={0}&end={1}".format(very_first_start, end_ts)
+latency_data = fetch_lat_data(latency_url + url_all)
+#print(latency_new_data)
+print(type(latency_data))
+#input("Continue")
+#values = [i[0]['values'] for i in latency_new_data['50th']]
+#print(values)
+#print(latency_new_data[0].keys())
+all_data['latency_data'] = latency_data#.append(latency_new_data)
+
+'''print(len(all_data['cpu_data']))
+    if len(all_data['cpu_data'])%20 == 0: # every few minutes...
+        print("SAVING TO PICKLE FILE")
+        # save data to file'''
+
+with open("data.p", "wb") as f:
+    pickle.dump(all_data, f)
 
 #print ("Start")
 

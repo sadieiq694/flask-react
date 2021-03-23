@@ -241,7 +241,10 @@ def get_deployments(vert_id, edge_id, graph_data, deployments):
             term_time = datetime.now() + timedelta(weeks=500)
             cur_vert['termination_time'] =  time_formatting(term_time)
             cur_app_label = dep.metadata.labels['app']
-            cur_version_label = dep.metadata.labels['version']
+            try:
+                cur_version_label = dep.metadata.labels['version']
+            except:
+                print("No version label")
             # INCLUDE STATUS INFO: dep.status.???
             # create edge HERE
             pod_list = [ x for x in graph_data['vertices'] if x['group'] == 'pod' and "app_label" in x and  x['app_label'] == cur_app_label and "version_label" in x and  x['version_label'] == cur_version_label]
