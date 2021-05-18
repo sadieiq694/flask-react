@@ -30,7 +30,7 @@ base_url = "http://prometheus.169.48.174.6.nip.io/api/v1/"
 quantile = 0.99
 service = ".*default.svc.cluster.local"
 
-cpu_url = base_url + '/query_range?query=container_cpu_usage_seconds_total&namespace=tritium&start=1614133653.088&end=1614137253.088&step=14'
+cpu_url = base_url + '/query_range?query=container_cpu_usage_seconds_total&namespace=tr&start=1614133653.088&end=1614137253.088&step=14'
 
 ######################
 ### METRICS QUERY ####
@@ -38,7 +38,10 @@ cpu_url = base_url + '/query_range?query=container_cpu_usage_seconds_total&names
 url = base_url + "/query_range?query=(histogram_quantile({0}%2C%20sum(irate(istio_request_duration_milliseconds_bucket%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{1}%22%7D%5B1m%5D))%20by%20(le))%20%2F%201000)%20&step=5"
 
 # latency for each service: rate(istio_request_duration_milliseconds_sum{reporter="destination"}[1m])/rate(istio_request_duration_milliseconds_count{reporter="destination"}[1m])
-url_latency = base_url + "/query_range?query=rate(istio_request_duration_milliseconds_sum{reporter=%22destination%22}[1m])/rate(istio_request_duration_milliseconds_count{reporter=%22destination%22}[1m])&step=5"
+# Train Ticket
+url_latency = 'query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20namespace%3D%22tr%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20namespace%3D%22tr%22%7D%5B1m%5D)&step=5'
+# bookinfo
+#url_latency = base_url + "/query_range?query=rate(istio_request_duration_milliseconds_sum{reporter=%22destination%22}[1m])/rate(istio_request_duration_milliseconds_count{reporter=%22destination%22}[1m])&step=5"
 
 # VOLUME round(sum(irate(istio_requests_total{reporter="destination"}[1m])), 0.001)
 
@@ -52,8 +55,8 @@ url_error = base_url + "/query_range?query=sum(irate(istio_requests_total%7Brepo
 
 # cpu rate(container_cpu_usage_seconds_total{ image!="", container_name!="POD"}[5m])
 # https://itnext.io/k8s-monitor-pod-cpu-and-memory-usage-with-prometheus-28eec6d84729
-url_cpu = base_url + "/query_range?query=rate(container_cpu_usage_seconds_total{namespace={tritum},container!=%22POD%22,image!=%22%22}[5m])&step=5" # != pod????
-url_memory = base_url + "/query_range?query=container_memory_working_set_bytes{namespace={tritium},container!=%22POD%22,image!=%22%22}&step=5"
+url_cpu = base_url + "/query_range?query=rate(container_cpu_usage_seconds_total{namespace={tr},container!=%22POD%22,image!=%22%22}[5m])&step=5" # != pod????
+url_memory = base_url + "/query_range?query=container_memory_working_set_bytes{namespace={tr},container!=%22POD%22,image!=%22%22}&step=5"
 ###########################
 ###########################
 
@@ -199,14 +202,15 @@ while end_ts - very_first_start < 1200: # 15 minutes
     url_now = "&start={0}&end={1}".format(start_ts,end_ts)
 
     #url_latency = ""
-    cpu_url_namespaced = base_url + "query_range?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10" #_=1614134310140"
-    memory_url_namespaced = base_url + "query_range?query=container_memory_working_set_bytes%7Bnamespace%3D%22tritium%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10"
+    cpu_url_namespaced = base_url + "query_range?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22tr%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10" #_=1614134310140"
+    memory_url_namespaced = base_url + "query_range?query=container_memory_working_set_bytes%7Bnamespace%3D%22tr%22%7D&step=15" #start=" + str(start_ts) + "&end=" + str(end_ts) + "&step=10"
     #latency_url = base_url + "query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20destination_service%3D~%22productpage.*%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20destination_service%3D~%22productpage.*%22%7D%5B1m%5D)&step=15" 
-    latency_url = base_url + "query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20namespace%3D%22tritium%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20namespace%3D%22tritium%22%7D%5B1m%5D)&step=15"
+    latency_url = base_url + "query_range?query=rate(istio_request_duration_milliseconds_sum%7Breporter%3D%22destination%22%2C%20namespace%3D%22tr%22%7D%5B1m%5D)%2Frate(istio_request_duration_milliseconds_count%7Breporter%3D%22destination%22%2C%20namespace%3D%22tr%22%7D%5B1m%5D)&step=15"
     #error_url_namespaced = 
     # error_url = base_url + "query_range?query=sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{0}%22%2Cresponse_code!~%225.*%22%7D%5B5m%5D))%20%2F%20sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22{0}%22%7D%5B5m%5D))&step=5"
+    # CHANGE!!!
     volume_productpage = base_url + "query_range?query=round(sum(irate(istio_requests_total%7Breporter%3D%22source%22%2Cdestination_service%3D~%22productpage.tritium.svc.cluster.local%22%7D%5B5m%5D))%2C%200.001)&step=15"
-
+    volume_travelservice = base_url + 'round(sum(irate(istio_requests_total%7Breporter%3D"destination"%2C%20destination_service%3D"ts-travel-service.tr.svc.cluster.local"%2C%20namespace%3D"tr"%7D%5B1m%5D))%2C%200.001)&step=15'
     ### RUN EVERY FETCH FUNCTION
 
     ### LATENCY ### # NOT TESTED!
@@ -222,7 +226,7 @@ while end_ts - very_first_start < 1200: # 15 minutes
     all_data['memory_data'].extend(mem_new_data[1:])
 
     ### VOLUME ### 
-    volume_new_data = fetch_volume_data(volume_productpage + url_now)
+    volume_new_data = fetch_volume_data(volume_travelservice + url_now)
     all_data['volume_data'].extend(volume_new_data)
 
     time.sleep(60.0 - ((time.time() - starttime) % 60.0))
